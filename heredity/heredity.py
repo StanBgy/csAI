@@ -138,88 +138,42 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone not in set` have_trait` does not have the trait.
     """
     final_probability = float(1)
-    for individual in people:
-        if individual in two_genes:
+    # Assign a variable for the number of genes a person has
+    for person in people:
+        if person in two_genes:
             genes = 2
-        elif individual in one_gene:
+        elif person in one_gene:
             genes = 1
         else:
             genes = 0
 
-        trait = individual in have_trait
+        trait = person in have_trait
 
-        if people[individual]['mother'] is None and people[individual]['father'] is None:
-            final_probability *= PROBS['gene'][genes]
-
+        # Checking for people with mother and father
+        if people[person]["mother"] is None and people[person]["father"] is None:
+            final_probability *= PROBS["gene"][genes]
+        # Create a heredity dictionary with the probability of a parent passing a gene
         else:
-            if people[individual][genes] == 0:
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 2:
-                    final_probability *= PROBS['mutation'] * PROBS['mutation']
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 1:
-                    final_probability *= PROBS['mutation'] * 0.5
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 0:
-                    final_probability *= PROBS['mutation'] * (1 - PROBS['mutation'])
+            heredity = {people[person]["mother"]: 0, people[person]["father"]: 0}
+            for parent in heredity:
+                if parent in two_genes:
+                    heredity[parent] = 1 - PROBS["mutation"]
+                elif parent in one_gene:
+                    heredity[parent] = 0.5
+                else:
+                    heredity[parent] = PROBS["mutation"]
 
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 2:
-                    final_probability *= 0.5 * PROBS['mutation']
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 1:
-                    final_probability *= 0.5 * 0.5
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 0:
-                    final_probability *= 0.5 * (1 - PROBS['mutation'])
+            # From this, we can calculate the probability of getting the genes from the parents
+            if genes == 2:
+                final_probability *= heredity[people[person]["mother"]] * heredity[people[person]["father"]]
+            elif genes == 1:
+                final_probability *= heredity[people[person]["mother"]] * (1 - heredity[people[person]["father"]]) + \
+                                     heredity[people[person]["father"]] * (1 - heredity[people[person]["mother"]])
+            else:
+                final_probability *= (1 - heredity[people[person]["mother"]]) * (1 - heredity[people[person]["father"]])
 
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 2:
-                    final_probability *= (1 - PROBS['mutation']) * PROBS['mutation']
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 1:
-                    final_probability *= (1 - PROBS['mutation']) * 0.5
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 0:
-                    final_probability *= (1 - PROBS['mutation']) * (1 - PROBS['mutation'])
-                final_probability *= PROBS['trait'][0][trait]
-
-            elif people[individual][genes] == 1:
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 2:
-                    final_probability *= (1 - PROBS['mutation']) * PROBS['mutation'] + PROBS['mutation'] * (1 - PROBS['mutation'])
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 1:
-                    final_probability *= (1 - PROBS['mutation']) * 0.5 + PROBS['mutation'] * 0.5
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 0:
-                    final_probability *= (1 - PROBS['mutation']) * (1 - PROBS['mutation']) + PROBS['mutation'] * PROBS['mutation']
-
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 2:
-                    final_probability *= 0.5 * (1 - PROBS['mutation']) + 0.5 * PROBS['mutation']
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 1:
-                    final_probability *= 0.5 * 0.5 + 0.5 * 0.5
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 0:
-                    final_probability *= 0.5 * PROBS['mutation'] + 0.5 * (1 - PROBS['mutation'])
-
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 2:
-                    final_probability *= PROBS['mutation'] * PROBS['mutation'] + (1 - PROBS['mutation']) * (1 - PROBS['mutation'])
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 1:
-                    final_probability *= PROBS['mutation'] * 0.5 + (1 - PROBS['mutation']) * 0.5
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 0:
-                    final_probability *= PROBS['mutation'] * (1 - PROBS['mutation']) + (1 - PROBS['mutation']) * PROBS['mutation']
-                final_probability *= PROBS['trait'][1][trait]
-
-            elif people[individual][genes] == 2:
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 2:
-                    final_probability *= (1 - PROBS['mutation']) * (1 - PROBS['mutation'])
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 1:
-                    final_probability *= (1 - PROBS['mutation']) * 0.5
-                if people[individual]['mother'][genes] == 2 and people[individual]['father'][genes] == 0:
-                    final_probability *= (1 - PROBS['mutation']) * PROBS['mutation']
-
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 2:
-                    final_probability *= 0.5 * (1 - PROBS['mutation'])
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 1:
-                    final_probability *= 0.5 * 0.5
-                if people[individual]['mother'][genes] == 1 and people[individual]['father'][genes] == 0:
-                    final_probability *= 0.5 * PROBS['mutation']
-
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 2:
-                    final_probability *= PROBS['mutation'] * (1 - PROBS['mutation'])
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 1:
-                    final_probability *= PROBS['mutation'] * 0.5
-                if people[individual]['mother'][genes] == 0 and people[individual]['father'][genes] == 0:
-                    final_probability *= PROBS['mutation'] * PROBS['mutation']
-                final_probability *= PROBS['trait'][2][trait]
+        # We still need to compute the final probability
+        final_probability *= PROBS["trait"][genes][trait]
 
     return final_probability
 
@@ -231,16 +185,17 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-
     for person in probabilities:
-        if person in one_gene:
-            probabilities[person]["gene"][1] += p
-        elif person in two_genes:
+        trait = person in have_trait
+        if person in two_genes:
             probabilities[person]["gene"][2] += p
+            probabilities[person]["trait"][trait] += p
+        elif person in one_gene:
+            probabilities[person]["gene"][1] += p
+            probabilities[person]["trait"][trait] += p
         else:
             probabilities[person]["gene"][0] += p
-
-        probabilities[person]["trait"][person in have_trait] += p
+            probabilities[person]["trait"][trait] += p
 
 
 def normalize(probabilities):
@@ -250,10 +205,17 @@ def normalize(probabilities):
     """
 
     for person in probabilities:
-        for field in probabilities[person]:
-            total = sum(dict(probabilities[person][field]).values())
-            for value in probabilities[person][field]:
-                probabilities[person][field][value] /= total
+        sum_genes = 0
+        for i in probabilities[person]["gene"]:
+            sum_genes += probabilities[person]["gene"][i]
+        for i in probabilities[person]["gene"]:
+            probabilities[person]["gene"][i] /= sum_genes
+
+        sum_trait = 0
+        for i in probabilities[person]["trait"]:
+            sum_trait += probabilities[person]["trait"][i]
+        for i in probabilities[person]["trait"]:
+            probabilities[person]["trait"][i] /= sum_trait
 
 
 if __name__ == "__main__":
